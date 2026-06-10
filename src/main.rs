@@ -6,10 +6,12 @@ use std::{
 };
 
 use fuser::{
-    Config, Errno, FileAttr, FileType, Filesystem, Generation, INodeNo, MountOption, SessionACL,
+    Config, Errno, FileAttr, FileHandle, FileType, Filesystem, FopenFlags, Generation, INodeNo,
+    KernelConfig, MountOption, SessionACL,
 };
 
 const DISK_IMG_INODE: u64 = 2;
+const HUGE_BLKSIZE: u32 = 2 * 1024 * 1024;
 
 struct RamDiskFs {
     image: Arc<Vec<u8>>,
@@ -33,13 +35,22 @@ impl RamDiskFs {
             uid: req.uid(),
             gid: req.gid(),
             rdev: 0,
-            blksize: 4096,
+            blksize: HUGE_BLKSIZE,
             flags: 0,
         }
     }
 }
 
 impl Filesystem for RamDiskFs {
+    fn init(&mut self, _req: &fuser::Request, config: &mut KernelConfig) -> io::Result<()> {
+        // TODO: Proper error handling
+        let _= config.set_max_readahead(16 * 1024 * 1024);
+        // TODO: Does this option even matter for anything
+        let _ = config.set_max_write(16 * 1024 * 1024);
+        
+        Ok(())
+    }
+
     fn lookup(
         &self,
         req: &fuser::Request,
@@ -81,7 +92,7 @@ impl Filesystem for RamDiskFs {
                         uid: req.uid(),
                         gid: req.gid(),
                         rdev: 0,
-                        blksize: 4096,
+                        blksize: HUGE_BLKSIZE,
                         flags: 0,
                     },
                 );
@@ -150,6 +161,49 @@ impl Filesystem for RamDiskFs {
 
         reply.ok();
     }
+
+    fn access(
+        &self,
+        _req: &fuser::Request,
+        ino: INodeNo,
+        mask: fuser::AccessFlags,
+        reply: fuser::ReplyEmpty,
+    ) {
+        match ino {
+            INodeNo::ROOT | INodeNo(DISK_IMG_INODE) => {
+                let write_bits = libc::W_OK;
+
+                if (mask.bits() & write_bits) != 0 {
+                    reply.error(Errno::from_i32(libc::EROFS));
+                } else {
+                    reply.ok();
+                }
+            }
+            _ => reply.error(Errno::from_i32(libc::ENOENT)),
+        }
+    }
+
+    fn open(
+        &self,
+        _req: &fuser::Request,
+        ino: INodeNo,
+        flags: fuser::OpenFlags,
+        reply: fuser::ReplyOpen,
+    ) {
+        if ino != INodeNo(DISK_IMG_INODE) {
+            reply.error(Errno::from_i32(libc::ENOENT));
+            return;
+        }
+
+        let accmode = flags.0 & libc::O_ACCMODE;
+
+        if accmode != libc::O_RDONLY {
+            reply.error(Errno::from_i32(libc::EROFS));
+            return;
+        }
+
+        reply.opened(FileHandle(0), FopenFlags::FOPEN_DIRECT_IO);
+    }
 }
 
 fn main() -> anyhow::Result<()> {
@@ -167,6 +221,9 @@ fn main() -> anyhow::Result<()> {
     let compressed = fs::read(&img_path)?;
 
     let image = zstd::stream::decode_all(io::Cursor::new(compressed))?;
+    unsafe {
+        libc::madvise(image.as_ptr() as *mut _, image.len(), libc::MADV_HUGEPAGE);
+    };
 
     println!("Decompressed image: {} MiB", image.len() / 1024 / 1024);
 
@@ -180,8 +237,12 @@ fn main() -> anyhow::Result<()> {
 
     let mut config = Config::default();
     config.mount_options.push(MountOption::AutoUnmount);
+    config.mount_options.push(MountOption::RO);
+    config.mount_options.push(MountOption::FSName(
+        "fuse-zstd-img".into()
+    ));
     config.acl = SessionACL::All;
-    config.n_threads = Some(1);
+    config.n_threads = Some(num_cpus::get());
     config.clone_fd = true;
 
     fuser::mount2(fs, &mount_point, &config)?;
