@@ -1,4 +1,5 @@
 pub mod memory;
+pub mod seekable;
 
 use std::io;
 
