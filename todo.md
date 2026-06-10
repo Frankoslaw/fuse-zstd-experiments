@@ -1,0 +1,6 @@
+- [ ] cargo-fuzz
+- [ ] gzip and xz
+- [ ] cutsom checkpoints for single zstd frame
+- [ ] LRU cache
+- [ ] zstd-seekable
+- [ ] io_uring + async
