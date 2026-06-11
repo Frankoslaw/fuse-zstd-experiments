@@ -1,3 +1,4 @@
 /target
 *.img
 test-mount
+.archive-mount

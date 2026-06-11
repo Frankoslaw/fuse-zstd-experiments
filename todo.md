@@ -1,9 +1,0 @@
-- [ ] cargo-fuzz
-- [ ] gzip and xz
-- [ ] cutsom checkpoints for single zstd frame
-- [ ] LRU cache
-- [x] zstd-seekable
-- [ ] io_uring + async
-- [ ] Add clap and split commands
-    - [ ] zstd-seekify
-    - [ ] dense-mount

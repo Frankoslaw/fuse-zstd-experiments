@@ -1,0 +1,15 @@
+- [ ] cargo-fuzz
+- [ ] gzip and xz
+    - do they even support seeking?
+- ~~[ ]~~ cutsom checkpoints for single zstd frame
+    - irrerelvant as zstd-seekify can convert any zstd file into meta's seekable format without need for custom runtime conversion
+- [ ] LRU cache
+- [x] zstd-seekable
+- [ ] io_uring + async
+- [x] Add clap and split commands
+    - [x] zstd-seekify
+    - [x] archive-mount
+- [ ] optiomize both seekify and mount utilities
+    - [ ] run benchmarks (criterion?)
+- [ ] write proper readme
+    - [ ] add demo video to readme showing mounting of disk image larger than the local avalible space

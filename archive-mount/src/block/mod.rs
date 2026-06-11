@@ -3,8 +3,6 @@ pub mod seekable;
 
 use std::io;
 
-pub use memory::ZstdMemoryBackend;
-
 pub trait BlockDevice: Send + Sync {
     fn len(&self) -> u64;
 

@@ -1,16 +1,23 @@
-use std::{fs, io};
+#![allow(unused)]
+use std::{fs, io, path::Path};
 
-use crate::block::BlockDevice;
+use anyhow::anyhow;
+
+use crate::{block::BlockDevice, helper::is_zst_file};
 
 pub struct ZstdMemoryBackend {
     pub data: Vec<u8>,
 }
 
 impl ZstdMemoryBackend {
-    pub fn from_zstd_file(path: &str) -> io::Result<Self> {
-        let compressed = fs::read(path)?;
+    pub fn from_zstd_file(path: &Path) -> anyhow::Result<Self> {
+        let file = fs::read(path)?;
 
-        let data = zstd::stream::decode_all(io::Cursor::new(compressed))?;
+        if !is_zst_file(path)? {
+            return Err(anyhow!("ZstdMemoryBackend only supports .zst files"));
+        }
+
+        let data = zstd::stream::decode_all(io::Cursor::new(file))?;
 
         unsafe {
             libc::madvise(data.as_ptr() as *mut _, data.len(), libc::MADV_HUGEPAGE);
