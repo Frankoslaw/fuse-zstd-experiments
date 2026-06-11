@@ -13,3 +13,6 @@
     - [ ] run benchmarks (criterion?)
 - [ ] write proper readme
     - [ ] add demo video to readme showing mounting of disk image larger than the local avalible space
+- [ ] auto run losetup and mount based of detected partitions
+- [ ] add option to specify offset to expose only single partition via disk.img or create file per known partition
+- [ ] validate correctness of used license and provide proper attributions
