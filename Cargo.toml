@@ -1,3 +1,3 @@
 [workspace]
 resolver = "3"
-members = ["archive-mount", "zstd-seekify"]
+members = ["zstd-seekable-mount", "zstd-seekify"]

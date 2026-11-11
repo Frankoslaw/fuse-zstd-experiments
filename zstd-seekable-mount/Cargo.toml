@@ -1,5 +1,5 @@
 [package]
-name = "archive-mount"
+name = "zstd-seekable-mount"
 version = "0.1.0"
 edition = "2024"
 

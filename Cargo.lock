@@ -68,22 +68,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
-name = "archive-mount"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "clap_complete",
- "fuser",
- "libc",
- "log",
- "num_cpus",
- "pretty_env_logger",
- "zstd",
- "zstd-seekable",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -973,6 +957,22 @@ dependencies = [
  "serde_derive",
  "thiserror",
  "threadpool",
+]
+
+[[package]]
+name = "zstd-seekable-mount"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "clap_complete",
+ "fuser",
+ "libc",
+ "log",
+ "num_cpus",
+ "pretty_env_logger",
+ "zstd",
+ "zstd-seekable",
 ]
 
 [[package]]

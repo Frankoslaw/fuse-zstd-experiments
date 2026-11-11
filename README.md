@@ -47,26 +47,26 @@ zstd-seekify ~/backups/dell_latitude_backup.img -q
 | `-i`, `--input-buffer` | `16777216` (16 MiB) | read/compress buffer size |
 | `-q`, `--quiet` | off | disable logging and progress bar |
 
-archive-mount
+zstd-seekable-mount
 ---
 Mount a seekable `.zst` file as a FUSE filesystem. The decompressed payload is exposed as a single read-only regular file, so large images (e.g. disk backups) can be accessed without storing the full uncompressed size on disk.
 
 **Usage**
 
 ```sh
-# mount with defaults (mount point: ./.archive-mount)
-archive-mount ~/Documents/dell_latitude_backup/dell_latitude_backup.seek.zst
+# mount with defaults (mount point: ./.zstd-seekable-mount)
+zstd-seekable-mount ~/Documents/dell_latitude_backup/dell_latitude_backup.seek.zst
 
 # custom mount point
-archive-mount ~/backups/dell_latitude_backup.seek.zst -m /tmp/dell-mount
+zstd-seekable-mount ~/backups/dell_latitude_backup.seek.zst -m /tmp/dell-mount
 
 # verbose logging via RUST_LOG (defaults to info when unset)
-RUST_LOG=debug archive-mount ~/backups/dell_latitude_backup.seek.zst
+RUST_LOG=debug zstd-seekable-mount ~/backups/dell_latitude_backup.seek.zst
 ```
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-m`, `--mount-point` | `./.archive-mount` | directory to mount the FUSE filesystem |
+| `-m`, `--mount-point` | `./.zstd-seekable-mount` | directory to mount the FUSE filesystem |
 | `--auto-create-mount` | `true` | create the mount point if it does not exist |
 | `--auto-unmount` | `true` | unmount when the process exits |
 

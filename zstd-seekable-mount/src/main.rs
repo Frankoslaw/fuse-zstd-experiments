@@ -21,7 +21,7 @@ mod helper;
 struct Args {
     file: PathBuf,
 
-    #[arg(short, long, default_value = "./.archive-mount")]
+    #[arg(short, long, default_value = "./.zstd-seekable-mount")]
     mount_point: PathBuf,
 
     #[arg(long, default_value_t = true)]
@@ -36,7 +36,7 @@ fn main() -> anyhow::Result<()> {
         generate(
             shell,
             &mut Args::command(),
-            "archive-mount",
+            "zstd-seekable-mount",
             &mut io::stdout(),
         );
         return Ok(());

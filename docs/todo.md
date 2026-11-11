@@ -8,7 +8,7 @@
 - [ ] io_uring + async
 - [x] Add clap and split commands
     - [x] zstd-seekify
-    - [x] archive-mount
+    - [x] zstd-seekable-mount
 - [ ] optiomize both seekify and mount utilities
     - [ ] run benchmarks (criterion?)
 - [ ] write proper readme

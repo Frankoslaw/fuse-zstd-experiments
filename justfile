@@ -13,7 +13,7 @@ install: build
     install_dir="${INSTALL_DIR:-$HOME/.local/bin}"
     mkdir -p "$install_dir"
     existing=()
-    for tool in zstd-seekify archive-mount; do
+    for tool in zstd-seekify zstd-seekable-mount; do
         if [ -e "$install_dir/$tool" ]; then
             existing+=("$install_dir/$tool")
         fi
@@ -27,8 +27,8 @@ install: build
             *) echo 'Installation cancelled.'; exit 1 ;;
         esac
     fi
-    install -m 755 target/release/zstd-seekify target/release/archive-mount "$install_dir/"
-    echo "Installed zstd-seekify and archive-mount to $install_dir"
+    install -m 755 target/release/zstd-seekify target/release/zstd-seekable-mount "$install_dir/"
+    echo "Installed zstd-seekify and zstd-seekable-mount to $install_dir"
 
 # Install shell completions for the detected shell, or COMPLETION_SHELL.
 install-completions: build
@@ -38,17 +38,17 @@ install-completions: build
         bash)
             completion_dir="${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions"
             zstd_completion="$completion_dir/zstd-seekify"
-            mount_completion="$completion_dir/archive-mount"
+            mount_completion="$completion_dir/zstd-seekable-mount"
             ;;
         fish)
             completion_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fish/completions"
             zstd_completion="$completion_dir/zstd-seekify.fish"
-            mount_completion="$completion_dir/archive-mount.fish"
+            mount_completion="$completion_dir/zstd-seekable-mount.fish"
             ;;
         zsh)
             completion_dir="${ZSH_COMPLETION_DIR:-$HOME/.zfunc}"
             zstd_completion="$completion_dir/_zstd-seekify"
-            mount_completion="$completion_dir/_archive-mount"
+            mount_completion="$completion_dir/_zstd-seekable-mount"
             ;;
         *)
             echo "Unsupported shell '$shell'. Set COMPLETION_SHELL to bash, fish, or zsh." >&2
@@ -70,7 +70,7 @@ install-completions: build
         esac
     fi
     target/release/zstd-seekify --generate-completion "$shell" > "$zstd_completion"
-    target/release/archive-mount --generate-completion "$shell" > "$mount_completion"
+    target/release/zstd-seekable-mount --generate-completion "$shell" > "$mount_completion"
     echo "Installed $shell completions to $completion_dir"
     if [ "$shell" = zsh ]; then
         echo 'For zsh, ensure this directory is on fpath (for example: fpath=(~/.zfunc $fpath)).'
@@ -78,4 +78,4 @@ install-completions: build
 
 # Remove the installed tools from INSTALL_DIR.
 uninstall:
-    rm -f "${INSTALL_DIR:-$HOME/.local/bin}/zstd-seekify" "${INSTALL_DIR:-$HOME/.local/bin}/archive-mount"
+    rm -f "${INSTALL_DIR:-$HOME/.local/bin}/zstd-seekify" "${INSTALL_DIR:-$HOME/.local/bin}/zstd-seekable-mount"

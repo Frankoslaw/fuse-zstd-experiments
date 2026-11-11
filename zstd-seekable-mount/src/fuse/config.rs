@@ -7,7 +7,7 @@ pub fn default_config() -> Config {
     config.mount_options.push(MountOption::RO);
     config
         .mount_options
-        .push(MountOption::FSName("fuse-archive-mount".into()));
+        .push(MountOption::FSName("fuse-zstd-seekable-mount".into()));
 
     config.acl = SessionACL::All;
     config.n_threads = Some(num_cpus::get());
