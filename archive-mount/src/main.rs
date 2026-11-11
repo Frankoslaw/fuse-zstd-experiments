@@ -1,5 +1,7 @@
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::{Shell, generate};
 use fuser::MountOption;
+use std::io;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::{
@@ -30,6 +32,16 @@ struct Args {
 }
 
 fn main() -> anyhow::Result<()> {
+    if let Some(shell) = completion_shell()? {
+        generate(
+            shell,
+            &mut Args::command(),
+            "archive-mount",
+            &mut io::stdout(),
+        );
+        return Ok(());
+    }
+
     let args = Args::parse();
 
     if std::env::var("RUST_LOG").is_err() {
@@ -61,4 +73,29 @@ fn main() -> anyhow::Result<()> {
     fuser::mount2(fs, &args.mount_point, &config)?;
 
     return Ok(());
+}
+
+fn completion_shell() -> anyhow::Result<Option<Shell>> {
+    let mut args = std::env::args_os().skip(1);
+    while let Some(arg) = args.next() {
+        if arg == "--generate-completion" {
+            let shell = args.next().ok_or_else(|| {
+                anyhow::anyhow!("--generate-completion requires bash, fish, or zsh")
+            })?;
+            let shell = shell
+                .to_str()
+                .ok_or_else(|| anyhow::anyhow!("completion shell name must be valid UTF-8"))?
+                .parse::<Shell>()
+                .map_err(|_| {
+                    anyhow::anyhow!("unsupported completion shell; use bash, fish, or zsh")
+                })?;
+            if !matches!(shell, Shell::Bash | Shell::Fish | Shell::Zsh) {
+                return Err(anyhow::anyhow!(
+                    "unsupported completion shell; use bash, fish, or zsh"
+                ));
+            }
+            return Ok(Some(shell));
+        }
+    }
+    Ok(None)
 }

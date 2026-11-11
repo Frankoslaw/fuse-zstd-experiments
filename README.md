@@ -2,6 +2,25 @@
 
 Experiments with Meta's [seekable zstd](https://github.com/facebook/zstd/tree/dev/contrib/seekable_format) format: re-encode archives for random access, then mount them via FUSE without fully decompressing to disk.
 
+## Build and install
+
+The `justfile` provides tasks for building and installing both tools:
+
+```sh
+just build
+just install
+just install-completions
+just clean
+```
+
+`just install` puts the binaries in `~/.local/bin` by default. Set `INSTALL_DIR`
+to choose another destination. `just install-completions` detects Bash, Fish, or
+Zsh from `$SHELL`; set `COMPLETION_SHELL` to override detection. Completions are
+installed separately from the binaries. For Zsh, add `~/.zfunc` to `fpath` in
+your `.zshrc` (or set `ZSH_COMPLETION_DIR` to a directory already on `fpath`).
+Both install tasks warn and ask before replacing existing files. `just clean`
+removes the workspace build artifacts.
+
 ## Description of the tools
 
 zstd-seekify
@@ -12,13 +31,13 @@ Re-encode a plain file or a standard `.zst` archive into Meta's seekable zstd va
 
 ```sh
 # compress a raw disk image (writes disk.seek.zst)
-cargo run --release -p zstd-seekify -- ~/backups/dell_latitude_backup.img
+zstd-seekify ~/backups/dell_latitude_backup.img
 
 # re-encode an existing .zst archive at level 5 with 8 MiB frames
-cargo run --release -p zstd-seekify -- ~/backups/dell_latitude_backup.zst -l 5 -f 8388608
+zstd-seekify ~/backups/dell_latitude_backup.zst -l 5 -f 8388608
 
 # quiet mode (no log output, no progress bar)
-cargo run --release -p zstd-seekify -- ~/backups/dell_latitude_backup.img -q
+zstd-seekify ~/backups/dell_latitude_backup.img -q
 ```
 
 | Flag | Default | Description |
@@ -36,13 +55,13 @@ Mount a seekable `.zst` file as a FUSE filesystem. The decompressed payload is e
 
 ```sh
 # mount with defaults (mount point: ./.archive-mount)
-cargo run --release -p archive-mount -- ~/Documents/dell_latitude_backup/dell_latitude_backup.seek.zst
+archive-mount ~/Documents/dell_latitude_backup/dell_latitude_backup.seek.zst
 
 # custom mount point
-cargo run --release -p archive-mount -- ~/backups/dell_latitude_backup.seek.zst -m /tmp/dell-mount
+archive-mount ~/backups/dell_latitude_backup.seek.zst -m /tmp/dell-mount
 
 # verbose logging via RUST_LOG (defaults to info when unset)
-RUST_LOG=debug cargo run --release -p archive-mount -- ~/backups/dell_latitude_backup.seek.zst
+RUST_LOG=debug archive-mount ~/backups/dell_latitude_backup.seek.zst
 ```
 
 | Flag | Default | Description |

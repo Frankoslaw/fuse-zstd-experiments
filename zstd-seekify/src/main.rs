@@ -1,11 +1,12 @@
 use std::{
     fs::File,
-    io::{BufWriter, Read, Write},
+    io::{self, BufWriter, Read, Write},
     path::{Path, PathBuf},
 };
 
 use anyhow::anyhow;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::{Shell, generate};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use log::LevelFilter;
@@ -166,6 +167,16 @@ fn recompress_seekable(
 }
 
 fn main() -> anyhow::Result<()> {
+    if let Some(shell) = completion_shell()? {
+        generate(
+            shell,
+            &mut Args::command(),
+            "zstd-seekify",
+            &mut io::stdout(),
+        );
+        return Ok(());
+    }
+
     let args = Args::parse();
 
     let log_level = if args.quiet {
@@ -245,4 +256,27 @@ fn main() -> anyhow::Result<()> {
     log::info!("Successfully re-encoded to: {:?}", out_path);
 
     Ok(())
+}
+
+fn completion_shell() -> anyhow::Result<Option<Shell>> {
+    let mut args = std::env::args_os().skip(1);
+    while let Some(arg) = args.next() {
+        if arg == "--generate-completion" {
+            let shell = args
+                .next()
+                .ok_or_else(|| anyhow!("--generate-completion requires bash, fish, or zsh"))?;
+            let shell = shell
+                .to_str()
+                .ok_or_else(|| anyhow!("completion shell name must be valid UTF-8"))?
+                .parse::<Shell>()
+                .map_err(|_| anyhow!("unsupported completion shell; use bash, fish, or zsh"))?;
+            if !matches!(shell, Shell::Bash | Shell::Fish | Shell::Zsh) {
+                return Err(anyhow!(
+                    "unsupported completion shell; use bash, fish, or zsh"
+                ));
+            }
+            return Ok(Some(shell));
+        }
+    }
+    Ok(None)
 }
